@@ -4,9 +4,8 @@
 #include <WiFi.h>
 #include <iostream>
 #include <string>
-
+#include <Servo.h>
 #include "secrets.h"  // add WLAN Credentials in here.
-
 #include <FS.h>        // File System for Web Server Files
 
 // mark parameters not used in example
@@ -31,42 +30,21 @@ WebServer server(80);
 // ===== Simple functions used to answer simple GET requests =====
 
 // This function is called when the sysInfo service was requested.
-int fatorial(int n) {
-  int fat = 1;
-  for (int i = 1; i <= n; i++) {
-    fat *= i;
-  }
-  return fat;
-}
 
-void calculator() {
-  String op = server.arg("op");
-  String a = server.arg("a");
-  String b = server.arg("b");
+Servo motor;
 
-  int an = a.toInt();
-  int bn = b.toInt();
+void control() {
+  String led = server.arg("a");
+  String servo = server.arg("b");
 
-  unsigned long t0 = micros();
-  int res = 0;
-  if (op == "p") {
-    res = an + bn;
-  } else if (op == "s") {
-    res = an - bn;
-  } else if (op == "m") {
-    res = an * bn;
-  } else if (op == "f") {
-    res = fatorial(an);
-  } else {
-    res = an / bn;
-  }
-  unsigned long deltaT = micros() - t0;
-  digitalWrite(0, ((res & 0xF) >> 3) & 1);
-  digitalWrite(1, ((res & 0xF) >> 2) & 1);
-  digitalWrite(2, ((res & 0xF) >> 1) & 1);
-  digitalWrite(3, ((res & 0xF))      & 1);
+  int brightness = led.toInt();
+  int angle = servo.toInt();
 
-  server.send(200, "application/json", "{\"res\":" + String(res) + ",\"overflow\":" + (res > 7 || res < -8) + ",\"deltaT\":" + deltaT + "}");
+  ledcWrite(2, brightness);
+  angle = constrain(angle, 0, 180);
+  motor.write(angle);
+
+  server.send(200, "application/json","{\"status\":\"ok\"}");
 }  // handleSysInfo()
 
 
@@ -101,7 +79,7 @@ void setup(void) {
   TRACE("Register service handlers...\n");
 
   // register some REST services
-  server.on("/calc", HTTP_GET, calculator);
+  server.on("/ctrl", HTTP_GET, control);
 
   TRACE("Register file system handlers...\n");
 
@@ -111,18 +89,15 @@ void setup(void) {
   TRACE("Register default (not found) answer...\n");
 
   server.on("/", []() {
-    server.send(200, "text/html", FPSTR(calcContent));
+    server.send(200, "text/html", FPSTR(ctrlContent));
   });
 
   server.begin();
 
   TRACE("open <http://%s> or <http://%s>\n", WiFi.getHostname(), WiFi.localIP().toString().c_str());
 
-  pinMode(0, OUTPUT);
-  pinMode(1, OUTPUT);
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-
+  ledcAttach(2, 5000, 8);
+  servo.attach(18);
 }  // setup
 
 // run the server...

@@ -6,85 +6,41 @@
  */
 
 // used for $upload.htm
-static const char calcContent[] PROGMEM =
-  R"==(
-<!doctype html>
+static const char ctrlContent[] PROGMEM =
+  <!doctype html>
 <html lang='en'>
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Calculadora</title>
+  <title>Controlador</title>
 </head>
 
 <body>
   <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-    <h1>Calculadora</h1>
+    <h1>Controlador</h1>
   </div>
     <hr>
   <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;"> 
+    <h2>Led </h2>
     <input id="a" type="number"></input>
-    <fieldset id="op">
-      <legend>Operação</legend>
-      <input type="radio" id="+" name="op" value="+">
-      <label for="+">+</label>
-      <input type="radio" id="-" name="op" value="-">
-      <label for="-">-</label>
-      <input type="radio" id="x" name="op" value="x">
-      <label for="x">x</label>
-      <input type="radio" id="!" name="op" value="!">
-      <label for="!">!</label>
-      <input type="radio" id="/" name="op" value="/">
-      <label for="!">/</label>
-    </fieldset>
+    <h2>Servo motor</h2>
     <input id="b" type="number"></input>
     <br/>
-    <button id="calc" style="margin: 10px;">Calcular!</button>
+    <button id="ctrl" style="margin: 10px;">Enviar</button>
     <br/>
     <p id="res"></p>
-    <p id="over"></p>
-    <p id="deltaT"></p>
   </div>
   <script>
     let a = document.getElementById('a');
     let b = document.getElementById('b');
-    let calc = document.getElementById('calc');
-    let res = document.getElementById('res');
-    let overflow = document.getElementById('over');
-    
-    let deltaT = document.getElementById('deltaT');
+    let ctrl = document.getElementById('ctrl');
 
-    function fac(n) {
-      if (n > 1) return n * fac(n - 1);
-      else return n;
-    }
-
-    calc.addEventListener('click', () => {
-      let op = document.getElementById('+').checked ? "+" : 
-        document.getElementById('-').checked ? "-" :
-        document.getElementById('x').checked ? "x" : 
-        document.getElementById('!').checked ? "!" :
-        "/"
-
-      if (op === "+")
-        res.textContent = +a.value + +b.value + " (+ Calculado no js!)"
-      else if (op === "-")
-        res.textContent = +a.value - +b.value + " (- Calculado no js!)"
-      else if (op === "x")
-        res.textContent = +a.value * +b.value + " (x Calculado no js!)"
-      else if (op === "!")
-        res.textContent = fac(a.value) + " (! Calculado no js!)"
-      else 
-        res.textContent = +a.value / +b.value + " (/ Calculado no js!)"
-      fetch(`/calc?op=${op === "+" ? "p" : op === "-" ? "s" : op === "x" ? "m" : op === "!" ? "f" : "d" }&a=${+a.value}&b=${+b.value}`, { method: 'GET' }).then(response => {
+    ctrl.addEventListener('click', () => {
+     //talvez precise colocar METHOD GET
+      fetch(`/ctrl?a=${+a.value}&b=${+b.value}`,).then(response => {
         response.json().then(json => {
-          res.textContent = json.res
-          if (json.overflow)
-            overflow.textContent = "Houve overflow";
-          else 
-            overflow.textContent = "";
-
-          deltaT.textContent = json.deltaT;
+          res.textContent = "Enviado!"
         })        
       });  
     
