@@ -6,7 +6,8 @@
  */
 
 // used for $upload.htm
-static const char ctrlContent[] PROGMEM =
+static const char ctrlContent[] PROGMEM = 
+R"==(  
   <!doctype html>
 <html lang='en'>
 

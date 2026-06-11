@@ -4,7 +4,7 @@
 #include <WiFi.h>
 #include <iostream>
 #include <string>
-#include <Servo.h>
+#include <ESP32Servo.h>
 #include "secrets.h"  // add WLAN Credentials in here.
 #include <FS.h>        // File System for Web Server Files
 
@@ -40,7 +40,7 @@ void control() {
   int brightness = led.toInt();
   int angle = servo.toInt();
 
-  ledcWrite(2, brightness);
+  ledcWrite(8, brightness);
   angle = constrain(angle, 0, 180);
   motor.write(angle);
 
@@ -96,8 +96,9 @@ void setup(void) {
 
   TRACE("open <http://%s> or <http://%s>\n", WiFi.getHostname(), WiFi.localIP().toString().c_str());
 
-  ledcAttach(2, 5000, 8);
-  servo.attach(18);
+  ledcAttach(8, 5000, 8);
+  motor.setPeriodHertz(50);
+  motor.attach(18);
 }  // setup
 
 // run the server...
